@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+﻿const mongoose = require("mongoose");
 
 const taskSchema = new mongoose.Schema(
     {
@@ -21,6 +21,12 @@ const taskSchema = new mongoose.Schema(
         },
 
         assignee: {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: "User",
+            default: null,
+        },
+
+        assignedTo: {
             type: mongoose.Schema.Types.ObjectId,
             ref: "User",
             default: null,
@@ -53,5 +59,14 @@ const taskSchema = new mongoose.Schema(
         timestamps: true,
     }
 );
+
+taskSchema.pre("save", function (next) {
+    if (this.assignee && !this.assignedTo) {
+        this.assignedTo = this.assignee;
+    } else if (this.assignedTo && !this.assignee) {
+        this.assignee = this.assignedTo;
+    }
+    next();
+});
 
 module.exports = mongoose.model("Task", taskSchema);
